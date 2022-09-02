@@ -58,18 +58,17 @@ if ($header->auth($server_request, $auth) === true) {
                             $user->requestDate();
                             $required = $user->required($request);
                             $valid = $validation->valid();
-                            if ($valid === true && $required === true) {
+                            if ($valid === true && $required === true && $user->create()!==false)  {
                                 $tokens = $token->createToken();
                                 $user->file($_FILES['img'],['image/png','image/jpg']);
                                 $auth->token = $tokens;
                                 $auth->create();
-                                $json->json(201, ['token' =>   $tokens,'user' ]);
+                                $json->json(201, ['token' =>   $tokens,'username'=>$user->username,'img'=>$user->img,'email'=>$user->email ]);
                             } else {
                                 $json->json(403, array('validation' => $valid, 'required' => $required));
                             }
                         }
                         break;
-                        
                     case '/rest-api/v1/api/logout/': {
                             $tokenCount = $auth->filter('token', apache_request_headers()['token__'] ?? '');
                             if (count($tokenCount) > 0) {

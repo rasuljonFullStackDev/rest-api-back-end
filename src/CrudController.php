@@ -257,7 +257,7 @@ class CrudController{
             if(empty(".'$fileRes'.")){
                 return '';
             }else{
-               return  ".'$url.$type'.";
+               return  ".'$url.".".$type'.";
             }
         }
 
