@@ -26,7 +26,7 @@ require_once __DIR__ . '/config/Validation.php'; ///validation
 require_once __DIR__ . '/config/Token.php'; //crf token create
 require_once __DIR__ . '/config/Json.php'; //crf token create
 $db = new DB; /// new db class start
-// $db->dbName = 'rest-api'; //// db name 
+// $db->dbName = 'rest-api-back-end'; //// db name 
 $db->dbName = 'crud'; //// db name 
 $db->dbusername = 'root'; //// db username
 $db->dbPasword = ''; /// db password
@@ -49,7 +49,7 @@ if ($header->auth($server_request, $auth) === true) {
     switch ($method) {
         case 'POST': {
                 switch ($server_request) {
-                    case '/rest-api/v1/api/register/': {
+                    case '/rest-api-back-end/v1/api/register/': {
                             $validation = new Validation;
                             $validation->key = ['username', 'password',  'email'];
                             $request['img'] = $user->fileUrl($_FILES['img'],['image/png','image/jpg']);
@@ -69,7 +69,7 @@ if ($header->auth($server_request, $auth) === true) {
                             }
                         }
                         break;
-                    case '/rest-api/v1/api/logout/': {
+                    case '/rest-api-back-end/v1/api/logout/': {
                             $tokenCount = $auth->filter('token', apache_request_headers()['token__'] ?? '');
                             if (count($tokenCount) > 0) {
                                 $json->json(200, [...$auth->delete($tokenCount[0]['id']), 'xabar' => 'siz profildan chiqdingiz',]);
@@ -78,7 +78,7 @@ if ($header->auth($server_request, $auth) === true) {
                             }
                         }
                         break;
-                    case '/rest-api/v1/api/login/': {
+                    case '/rest-api-back-end/v1/api/login/': {
                         $res = $user->where(['username'=>$request['username'],'password'=>$request['password']],"AND");
                         if (count($res) > 0) {
                             $tokens = $token->createToken();
@@ -92,7 +92,7 @@ if ($header->auth($server_request, $auth) === true) {
                             }
                         }
                         break;
-                    case '/rest-api/v1/api/blog/': {
+                    case '/rest-api-back-end/v1/api/blog/': {
                         $validation = new Validation;
                         $validation->key = ['title', 'description',  'author'];
                         $validation->request =  $request;
@@ -106,9 +106,10 @@ if ($header->auth($server_request, $auth) === true) {
                         }
                     }
                     break;
-                    case '/rest-api/v1/api/cars/': {
+                    case '/rest-api-back-end/v1/api/cars/': {
                             $validation = new Validation;
                             $validation->key = ['name', 'description',  'price', 'img'];
+                            $request['img'] = $cars->fileUrl($_FILES['img'],['image/png','image/jpg','image/JPG','image/jpeg']);
                             $validation->request =  $request;
                             $cars->request = $request;
                             $cars->requestDate();
@@ -116,8 +117,9 @@ if ($header->auth($server_request, $auth) === true) {
                             $valid = $validation->valid();
                             if ($valid === true && $required === true) {
                                 $json->json(201, $cars->create());
+                                $cars->file($_FILES['img'],['image/png','image/jpg','image/JPG','image/jpeg']);
                             } else {
-                                $json->json(403, array('validation' => $valid, 'required' => $required));
+                                $json->json(400, array('validation' => $valid, 'required' => $required));
                             }
                         }
                         break;
@@ -130,7 +132,7 @@ if ($header->auth($server_request, $auth) === true) {
             break;
         case 'GET': {
                 switch ($server_request) {
-                    case '/rest-api/v1/api/users/': {
+                    case '/rest-api-back-end/v1/api/users/': {
                             if ($params['id'] ?? '') {
                                 $json->json(200, array( 'users' => $user->showId($params['id'])));
                             } else {
@@ -138,15 +140,15 @@ if ($header->auth($server_request, $auth) === true) {
                             }
                         }
                         break;
-                    case '/rest-api/v1/api/cars/': {
+                    case '/rest-api-back-end/v1/api/cars/': {
                             if ($params['id'] ?? '') {
                                 $json->json(200, array( 'cars' => $cars->showId($params['id'])));
                             } else {
-                                $json->json(200, array( 'cars' => $cars->all()));
+                                $json->json(200, $cars->all());
                             }
                         }
                         break;
-                        case '/rest-api/v1/api/blog/': {
+                        case '/rest-api-back-end/v1/api/blog/': {
                             if ($params['id'] ?? '') {
                                 $json->json(200, array( 'blog' => $blogs->showId($params['id'])));
                             } else {
@@ -163,7 +165,7 @@ if ($header->auth($server_request, $auth) === true) {
             break;
         case 'PUT': {
                 switch ($server_request) {
-                    case '/rest-api/v1/api/users/':
+                    case '/rest-api-back-end/v1/api/users/':
                         if ($params['id'] ?? '' && count($user->showId($params['id'])) === 1) {
                             $userId = $user->showId($params['id'])[0];
                             $request['username'] = $request['username']  ??  $userId['username'];
@@ -182,7 +184,7 @@ if ($header->auth($server_request, $auth) === true) {
                             $json->json(400, array('xabar' => 'Malumot kiritishda xatolik bor'));
                         }
                         break;
-                    case '/rest-api/v1/api/cars/':
+                    case '/rest-api-back-end/v1/api/cars/':
                         if ($params['id'] ?? '' && count($user->showId($params['id'])) === 1) {
                             $carsId = $cars->showId($params['id'])[0];
                             $request['name'] = $request['name']  ??  $carsId['name'];
@@ -201,7 +203,7 @@ if ($header->auth($server_request, $auth) === true) {
                             $json->json(400, array('xabar' => 'Malumot kiritishda xatolik bor'));
                         }
                         break;
-                        case '/rest-api/v1/api/blog/':
+                        case '/rest-api-back-end/v1/api/blog/':
                             if ($params['id'] ?? '' && count($user->showId($params['id'])) === 1) {
                                 $blogsId = $blogs->showId($params['id'])[0];
                                 $request['title'] = $request['title']  ??  $blogsId['title'];
@@ -223,7 +225,7 @@ if ($header->auth($server_request, $auth) === true) {
             break;
         case "DELETE": {
                 switch ($server_request) {
-                    case '/rest-api/v1/api/users/': {
+                    case '/rest-api-back-end/v1/api/users/': {
                             if ($params['id'] ?? '') {
                                 if ($user->delete($params['id'])) {
                                     $json->json(200, array('xabar' => 'malumot ochirildi'));
@@ -235,9 +237,11 @@ if ($header->auth($server_request, $auth) === true) {
                             }
                         }
                         break;
-                    case '/rest-api/v1/api/cars/': {
+                    case '/rest-api-back-end/v1/api/cars/': {
                             if ($params['id'] ?? '') {
+                                $carsDel = $cars->showId($params['id'])[0];
                                 if ($cars->delete($params['id'])) {
+                                    unlink('.'. $carsDel['img']);
                                     $json->json(200, array('xabar' => 'malumot ochirildi'));
                                 } else {
                                     $json->json(400, array('xabar' => 'Malumot kiritishda xatolik bor'));
@@ -247,7 +251,7 @@ if ($header->auth($server_request, $auth) === true) {
                             }
                         }
                         break;
-                        case '/rest-api/v1/api/blog/': {
+                        case '/rest-api-back-end/v1/api/blog/': {
                             if ($params['id'] ?? '') {
                                 if ($blogs->delete($params['id'])) {
                                     $json->json(200, array('xabar' => 'malumot ochirildi'));
@@ -260,7 +264,7 @@ if ($header->auth($server_request, $auth) === true) {
                         }
                         break;
                     default: {
-                            $json->json(404, array('xabar' => "api url topilmadi"));
+                            // $json->json(404, array('xabar' => "api url topilmadi"));
                         }
                         break;
                 }
