@@ -4,12 +4,12 @@ class Header {
     public $tokenVerify = [
         // local project
         // '/project-name/v1/api/users/',
-     '/rest-api/v1/api/register/',
-     '/rest-api/v1/api/users/',
-    //  '/rest-api/v1/api/users/',
-     '/rest-api/v1/api/cars/',
-    //  '/rest-api/v1/api/category/'
-    '/rest-api/v1/api/blog/'
+     '/rest-api-back-end/v1/api/register/',
+     '/rest-api-back-end/v1/api/users/',
+    //  '/rest-api-back-end/v1/api/users/',
+     '/rest-api-back-end/v1/api/cars/',
+    //  '/rest-api-back-end/v1/api/category/'
+    '/rest-api-back-end/v1/api/blog/'
     ];
     public  $results = true;
     public function auth($server_request,$user){
