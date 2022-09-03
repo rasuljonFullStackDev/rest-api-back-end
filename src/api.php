@@ -187,18 +187,14 @@ if ($header->auth($server_request, $auth) === true) {
                     case '/rest-api-back-end/v1/api/cars/':
                         if ($params['id'] ?? '' && count($user->showId($params['id'])) === 1) {
                             $carsId = $cars->showId($params['id'])[0];
+                            var_dump($request);
                             $request['name'] = $request['name']  ??  $carsId['name'];
                             $request['description'] = $request['description']  ??  $carsId['description'];
                             $request['price'] = $request['price']  ??  $carsId['price'];
                             $request['img'] = $request['img']  ??  $carsId['img'];
                             $cars->request = $request;
                             $cars->requestDate();
-                            $res  = $cars->required(['name' => $request['name'] ?? '']);
-                            if ($res === true) {
-                                $json->json(200, array('status' => 200, ...$cars->update($params['id'])));
-                            } else {
-                                $json->json(403, ['required' => $res]);
-                            }
+                            $json->json(200, array('status' => 200, ...$cars->update($params['id'])));
                         } else {
                             $json->json(400, array('xabar' => 'Malumot kiritishda xatolik bor'));
                         }
@@ -240,8 +236,8 @@ if ($header->auth($server_request, $auth) === true) {
                     case '/rest-api-back-end/v1/api/cars/': {
                             if ($params['id'] ?? '') {
                                 $carsDel = $cars->showId($params['id'])[0];
-                                if ($cars->delete($params['id'])) {
-                                    unlink('.'. $carsDel['img']);
+                                if ($cars->delete($params['id']) ) {
+                                    $cars->deleteFile($carsDel['img']);
                                     $json->json(200, array('xabar' => 'malumot ochirildi'));
                                 } else {
                                     $json->json(400, array('xabar' => 'Malumot kiritishda xatolik bor'));

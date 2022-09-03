@@ -213,6 +213,18 @@
                 return array("xabar" => $e->getMessage()); 
             }
         }
+        public function deleteFile($url){
+            try {
+                if(unlink(__DIR__.$url)){
+                    return true;
+                }else {
+                    return false;
+                }
+            } catch (Exception $e) {
+                http_response_code(500);
+                return array("xabar" => $e->getMessage()); 
+            }
+        }
     }
 ?>
         
