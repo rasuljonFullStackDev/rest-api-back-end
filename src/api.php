@@ -43,7 +43,15 @@ $header = new Header; /// srf token
 $json = new Response; /// response json 
 $token = new Token; /// crf token create
 
+
 $request = $method==='POST'|| $_FILES ?  json_decode(file_get_contents('php://input'), true) ?? $_POST : $_GET;
+// $request = json_decode(file_get_contents('php://input'),true);
+// if($method==='POST'){
+//     // if(count($_FILES)>0);
+//     $request = json_decode(file_get_contents('php://input'),true) ?? $_POST;
+// }
+// var_dump($request);
+
 $params = $_GET ?? '';
 if ($header->auth($server_request, $auth) === true) {
     switch ($method) {
@@ -105,7 +113,9 @@ if ($header->auth($server_request, $auth) === true) {
                             $json->json(403, array('validation' => $valid));
                         }
                     }
+                    
                     break;
+
                     case '/rest-api-back-end/v1/api/cars/': {
                             $validation = new Validation;
                             $validation->key = ['name', 'description',  'price', 'img'];
@@ -122,8 +132,27 @@ if ($header->auth($server_request, $auth) === true) {
                                 $json->json(400, array('validation' => $valid, 'required' => $required));
                             }
                         }
+                    break;
+                    case '/rest-api-back-end/v1/api/cars/update/':
+                        // var_dump($request);
+                        if ($params['id'] ?? '' && count($user->showId($params['id'])) === 1) {
+                            $carsId = $cars->showId($params['id'])[0];
+                            $request['name'] = $request['name']  ??  $carsId['name'];
+                            $request['description'] = $request['description']  ??  $carsId['description'];
+                            $request['price'] = $request['price']  ??  $carsId['price'];
+                            $request['img'] =  $cars->fileUrl($_FILES['img'],['image/png','image/jpg','image/JPG','image/jpeg'])  ??  $carsId['img'];
+                            $cars->request = $request;
+                            $cars->requestDate();
+                            $json->json(200, array('status' => 200, ...$cars->update($params['id'])));
+                            if($cars->fileUrl($_FILES['img'],['image/png','image/jpg','image/JPG','image/jpeg'])!==''){
+                                $cars->deleteFile($carsId['img']);
+                                $cars->file($_FILES['img'],['image/png','image/jpg','image/JPG','image/jpeg']);
+                            }
+                        } else {
+                            // $json->json(400, array('xabar' => 'Malumot kiritishda xatolik bor'));
+                        }
                         break;
-                    default: {
+                        default: {
                             $json->json(404, array('xabar' => 'api url topilmadi'));
                         }
                         break;
@@ -156,6 +185,37 @@ if ($header->auth($server_request, $auth) === true) {
                             }
                         }
                         break;
+                        case '/rest-api-back-end/v1/api/file/': {
+                            // echo 'sasas';
+                            // if ($params['id'] ?? '') {
+                                $carsImg = $cars->showId($params['id'])[0]['img'];
+                                // header('Content-Type: image/png'); 
+                            //  echo    file_get_contents(__DIR__.'./src/controller'. $carsImg);
+                            //  readfile(__DIR__.'controller/store/00ea2d4c28e848926f1a708b5f1004cb.png');
+                                // echo './src/controller'. $carsImg;
+                            // } else {
+                                // $json->json(200, array( 'blog' => $blogs->all()));
+                            // }
+                            // $userJson =  file_get_contents("./00ea2d4c28e848926f1a708b5f1004cb.png");
+
+                            // $user = json_decode($userJson,true);
+                            // echo $userJson;
+                            // $file = '0   0ea2d4c28e848926f1a708b5f1004cb.jpg';
+
+                            header('Content-Type: image/png');
+                            // header('Content-Length: ' . filesize($file));
+                            $img =  file_get_contents(__DIR__.'\00ea2d4c28e848926f1a708b5f1004cb.png');
+                            // $user = json_decode($img,true);
+                            
+                            // readfile($file);
+                            // var_dump(scandir('./src'));
+                            // echo __FILE__;
+                            // echo __FILE__;
+                            // echo __DIR__.'\com.php';
+                            // readfile(__DIR__.'\00ea2d4c28e848926f1a708b5f1004cb.png');
+                            echo $img;
+                        }
+                        break;
                     default: {
                             $json->json(404, array('xabar' => 'api url topilmadi'));
                         }
@@ -178,16 +238,17 @@ if ($header->auth($server_request, $auth) === true) {
                             if ($res === true) {
                                 $json->json(200, array('status' => 200, ...$user->update($params['id'])));
                             } else {
-                                $json->json(403, ['required' => $res]);
+                                // $json->json(403, ['required' => $res]);
                             }
                         } else {
-                            $json->json(400, array('xabar' => 'Malumot kiritishda xatolik bor'));
+
+                            // $json->json(400, array('xabar' => 'Malumot kiritishda xatolik bor'));
                         }
                         break;
                     case '/rest-api-back-end/v1/api/cars/':
+                        // var_dump($request);
                         if ($params['id'] ?? '' && count($user->showId($params['id'])) === 1) {
                             $carsId = $cars->showId($params['id'])[0];
-                            var_dump($request);
                             $request['name'] = $request['name']  ??  $carsId['name'];
                             $request['description'] = $request['description']  ??  $carsId['description'];
                             $request['price'] = $request['price']  ??  $carsId['price'];
@@ -196,7 +257,7 @@ if ($header->auth($server_request, $auth) === true) {
                             $cars->requestDate();
                             $json->json(200, array('status' => 200, ...$cars->update($params['id'])));
                         } else {
-                            $json->json(400, array('xabar' => 'Malumot kiritishda xatolik bor'));
+                            // $json->json(400, array('xabar' => 'Malumot kiritishda xatolik bor'));
                         }
                         break;
                         case '/rest-api-back-end/v1/api/blog/':

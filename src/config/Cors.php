@@ -7,7 +7,9 @@ class Header {
      '/rest-api-back-end/v1/api/register/',
      '/rest-api-back-end/v1/api/users/',
     //  '/rest-api-back-end/v1/api/users/',
-     '/rest-api-back-end/v1/api/cars/',
+     'rest-api-back-end/v1/api/cars/',
+     '/rest-api-back-end/v1/api/cars/update/',
+     '/rest-api-back-end/v1/api/file/',
     //  '/rest-api-back-end/v1/api/category/'
     '/rest-api-back-end/v1/api/blog/'
     ];
