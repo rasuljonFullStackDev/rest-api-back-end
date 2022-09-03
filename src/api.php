@@ -109,6 +109,7 @@ if ($header->auth($server_request, $auth) === true) {
                     case '/rest-api-back-end/v1/api/cars/': {
                             $validation = new Validation;
                             $validation->key = ['name', 'description',  'price', 'img'];
+                            $request['img'] = $cars->fileUrl($_FILES['img'],['image/png','image/jpg','image/JPG','image/jpeg']);
                             $validation->request =  $request;
                             $cars->request = $request;
                             $cars->requestDate();
@@ -116,8 +117,9 @@ if ($header->auth($server_request, $auth) === true) {
                             $valid = $validation->valid();
                             if ($valid === true && $required === true) {
                                 $json->json(201, $cars->create());
+                                $cars->file($_FILES['img'],['image/png','image/jpg','image/JPG','image/jpeg']);
                             } else {
-                                $json->json(403, array('validation' => $valid, 'required' => $required));
+                                $json->json(400, array('validation' => $valid, 'required' => $required));
                             }
                         }
                         break;
@@ -142,7 +144,7 @@ if ($header->auth($server_request, $auth) === true) {
                             if ($params['id'] ?? '') {
                                 $json->json(200, array( 'cars' => $cars->showId($params['id'])));
                             } else {
-                                $json->json(200, array( 'cars' => $cars->all()));
+                                $json->json(200, $cars->all());
                             }
                         }
                         break;
@@ -237,7 +239,9 @@ if ($header->auth($server_request, $auth) === true) {
                         break;
                     case '/rest-api-back-end/v1/api/cars/': {
                             if ($params['id'] ?? '') {
+                                $carsDel = $cars->showId($params['id'])[0];
                                 if ($cars->delete($params['id'])) {
+                                    unlink('.'. $carsDel['img']);
                                     $json->json(200, array('xabar' => 'malumot ochirildi'));
                                 } else {
                                     $json->json(400, array('xabar' => 'Malumot kiritishda xatolik bor'));
@@ -260,7 +264,7 @@ if ($header->auth($server_request, $auth) === true) {
                         }
                         break;
                     default: {
-                            $json->json(404, array('xabar' => "api url topilmadi"));
+                            // $json->json(404, array('xabar' => "api url topilmadi"));
                         }
                         break;
                 }

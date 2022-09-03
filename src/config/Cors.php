@@ -23,8 +23,6 @@ class Header {
                     }
                 }
             }
-      
-          
          if($this->results===true){
             return $this->results;
          }else{
