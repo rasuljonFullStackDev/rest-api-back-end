@@ -157,9 +157,9 @@
                 $keyFilter = '';
                 foreach ($keys as $key => $value) {
                     if(count($keys)-1===$key){
-                        $keyFilter =  $keyFilter."$value="."'".$data[$value]."'";
+                        $keyFilter =  $keyFilter."$value=".":".$data[$value]."";
                     }    else{
-                        $keyFilter =  $keyFilter."$value="."'".$data[$value]."'"."  $type  ";
+                        $keyFilter =  $keyFilter."$value=".":".$data[$value].""."  $type  ";
                     }
                 }
                 $sql="SELECT * FROM `users` WHERE  $keyFilter";  
