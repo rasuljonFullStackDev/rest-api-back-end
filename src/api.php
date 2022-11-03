@@ -34,6 +34,8 @@ $dbconnect =  $db->connect(); /// db connected start
 $user = new UsersController;
 $cars = new CarsController;
 $blogs = new BlogesController;
+$userPdo = new UsersControllerPdo;
+$userPdo->db = $db->connect();
 $user->db = $db->connect();
 $blogs->db = $db->connect();
 $cars->db = $db->connect();
@@ -44,7 +46,7 @@ $json = new Response; /// response json
 $token = new Token; /// crf token create
 
 
-$request = $method==='POST'|| $_FILES ?  json_decode(file_get_contents('php://input'), true) ?? $_POST : $_GET;
+$request = json_decode(file_get_contents('php://input'), true)  ?? $_REQUEST ;
 // $request = json_decode(file_get_contents('php://input'),true);
 // if($method==='POST'){
 //     // if(count($_FILES)>0);
@@ -57,6 +59,49 @@ if ($header->auth($server_request, $auth) === true) {
     switch ($method) {
         case 'POST': {
                 switch ($server_request) {
+                    case '/rest-api-back-end/v1/api/userpdo/': {
+                        $validation = new Validation;
+                        $validation->key = ['username', 'password',  'email'];
+                        $request['img'] = 'test';
+                        $validation->request =  $request ?? '';
+                        $userPdo->request = $request ?? '';
+                        $userPdo->requestDate();
+                        $valid = $validation->valid();
+                        if ($valid === true &&  $userPdo->create()!==false)  {
+                            $tokens = $token->createToken();
+                            $auth->token = $tokens;
+                            $auth->create();
+                            $json->json(201, ['token' =>   $tokens,'username'=>$userPdo->username,'img'=>$user->img,'email'=>$user->email ]);
+                        } else {
+                            $json->json(403, array('validation' => $valid, 'required' => $required));
+                        }
+                    }
+                    break;
+                  
+                    case '/rest-api-back-end/v1/api/tests/' :{
+                        // var_dump($_FILES);
+                        var_dump($request);
+                        // foreach ($request as $key => $imgs) {
+                        //     # code...
+                        //     foreach ($imgs as $key => $img) {
+                        //         echo $img['imgs']['name']; 
+                        //         # code...
+                        //         $url = '/'.md5(time());
+                        //         $filePath =__DIR__.$url;
+                        //         move_uploaded_file($img['imgs']['name'], $filePath.".png");
+                        //     }
+                        // }
+                        foreach ($_FILES as $key => $img) {
+                            echo $img['tmp_name']; 
+                            var_dump($img);
+                            # code...
+                            $filePath =__DIR__;
+                            move_uploaded_file($img['tmp_name'], $filePath.".png");
+                        }
+                        // var_dump($_REQUEST);
+                        // var_dump(json_encode($_POST));
+                        }
+                        break;
                     case '/rest-api-back-end/v1/api/register/': {
                             $validation = new Validation;
                             $validation->key = ['username', 'password',  'email'];
@@ -163,9 +208,21 @@ if ($header->auth($server_request, $auth) === true) {
                 switch ($server_request) {
                     case '/rest-api-back-end/v1/api/users/': {
                             if ($params['id'] ?? '') {
-                                $json->json(200, array( 'users' => $user->showId($params['id'])));
+                                $json->json(200, array( 'users' => $userPdo->showId($params['id'])));
                             } else {
-                                $json->json(200, array( 'users' => $user->all()));
+                                $json->json(200, array( 'users' => $userPdo->all()));
+                            }
+                        }
+                        break;
+                        case '/rest-api-back-end/v1/api/usersfilters/': {
+                            if (($request['key'] ?? false) && ($request['value'] ?? false)) {
+                                $json->json(200, array( 'users' => $userPdo->filterLike($request['key'],$request['value'])));
+                            }
+                        }
+                        break;
+                        case '/rest-api-back-end/v1/api/usersf/': {
+                            $json->json(200, array( 'users' => $userPdo->where($request,'OR')));
+                            if ($params['username'] ?? false) {
                             }
                         }
                         break;
@@ -225,25 +282,25 @@ if ($header->auth($server_request, $auth) === true) {
             break;
         case 'PUT': {
                 switch ($server_request) {
-                    case '/rest-api-back-end/v1/api/users/':
-                        if ($params['id'] ?? '' && count($user->showId($params['id'])) === 1) {
-                            $userId = $user->showId($params['id'])[0];
-                            $request['username'] = $request['username']  ??  $userId['username'];
+                    case '/rest-api-back-end/v1/api/users/':{
+                            $userId = $userPdo->showId($params['id'])[0] ?? false;
+                        if ($params['id'] ?? '' && count($userId) !== 0 && $userId ) {
+                            $request['username'] = $request['username']  ??  $userId['username'] ;
                             $request['password'] = $request['password']  ??  $userId['password'];
                             $request['email'] = $request['email']  ??  $userId['email'];
                             $request['img'] = $request['img']  ??  $userId['img'];
-                            $user->request = $request;
-                            $user->requestDate();
-                            $res  = $user->required($request);
-                            if ($res === true) {
-                                $json->json(200, array('status' => 200, ...$user->update($params['id'])));
+                            $userPdo->request = $request;
+                            $userPdo->requestDate();
+                            $res = $userPdo->update($params['id']);
+                            if ($res !== false) {
+                                $json->json(200, array('status' => 200, ...$res));
                             } else {
-                                // $json->json(403, ['required' => $res]);
+                                $json->json(403, ['required' => $res]);
                             }
                         } else {
-
-                            // $json->json(400, array('xabar' => 'Malumot kiritishda xatolik bor'));
+                            $json->json(400, array('xabar' => 'Malumot kiritishda xatolik bor'));
                         }
+                    }
                         break;
                     case '/rest-api-back-end/v1/api/cars/':
                         // var_dump($request);

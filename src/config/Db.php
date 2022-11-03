@@ -7,15 +7,26 @@ class DB
     public $dbusername  ='root';
     public $dbPasword ='';
     public $db;
+    public $version=8;
     
     public function connect()
     {
-        $db = new mysqli('localhost', $this->dbusername, $this->dbPasword,$this->dbName);
-        if($db){
-            return $db;
+        if($this->version>7.4){
+            $pdo = new PDO("mysql:dbname=$this->dbName;host=localhost", $this->dbusername, $this->dbPasword );
+            if( $pdo){
+                return $pdo;
+            }else{
+                echo 'databes not connected';
+            }
         }else{
-            echo 'databes not connected';
+            $db = new mysqli('localhost', $this->dbusername, $this->dbPasword,$this->dbName);
+            if($db){
+                return $db;
+            }else{
+                echo 'databes not connected';
+            }
         }
+      
     }
 
     

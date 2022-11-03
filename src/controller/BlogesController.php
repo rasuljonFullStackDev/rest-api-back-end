@@ -7,8 +7,14 @@
         ///create data
         public function create(){
             try{
-                $sql="INSERT INTO `blogs`  ( `title` , `description` , `author` ) VALUES ('$this->title','$this->description','$this->author')";
-                if($this->db->query($sql)){
+                $data = [
+                    'title' => "sadsad",
+                    'description' => "sadsadsadsa'",
+                    'author' => "asdsad'",
+                ];
+                $pdo = new PDO("mysql:dbname=crud;host=localhost", "root", "" );
+                $sql="INSERT INTO `blogs`  ( `title` , `description` , `author` ) VALUES (:title, :description, :author)";
+                if($pdo->prepare($sql)->execute($this->request)){
                     http_response_code(201);
                     return array('xabar'=>'blogs table add');
                 }else {

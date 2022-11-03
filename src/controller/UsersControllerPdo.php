@@ -1,16 +1,18 @@
  <?php
         
-    class TokenController  
+    class UsersControllerPdo  
      {
-        public $token;  public $db;
+        public $username;  public $password;  public $email;  public $img;  public $db;
         public $request;
         ///create data
         public function create(){
             try{
-                $sql="INSERT INTO `auth_token`  ( `token` ) VALUES ('$this->token')";
-                if($this->db->query($sql)){
+                $sql="INSERT INTO `users`  ( `username` , `password` , `email` , `img` ) VALUES (:username ,:password ,:email , :img )";
+                $res=$this->db->prepare($sql);
+                $res->bindParam(':username',$this->username);$res->bindParam(':password',$this->password);$res->bindParam(':email',$this->email);$res->bindParam(':img',$this->img);$res->bindParam(':username',$this->username);$res->bindParam(':password',$this->password);$res->bindParam(':email',$this->email);$res->bindParam(':img',$this->img); 
+              if($res->execute()){
                     http_response_code(201);
-                    return array('xabar'=>'auth_token table add'); 
+                    return array('xabar'=>'users table add');
                 }else {
                     http_response_code(403);
                     return false;
@@ -23,10 +25,13 @@
         // update
         public function update($id){
             try{
-                $sql="UPDATE `auth_token`  SET token='$this->token' WHERE id='$id'";  
-                if($this->db->query($sql)){
+                $sql="UPDATE `users`  SET username=:username,password=:password,email=:email,img=:img WHERE id=:id";  
+                $res=$this->db->prepare($sql);
+                $res->bindParam(':username',$this->username);$res->bindParam(':password',$this->password);$res->bindParam(':email',$this->email);$res->bindParam(':img',$this->img);$res->bindParam(':username',$this->username);$res->bindParam(':password',$this->password);$res->bindParam(':email',$this->email);$res->bindParam(':img',$this->img); 
+               $res->bindParam(':id',$id,PDO::PARAM_INT);
+                if($res->execute()){
                     http_response_code(200);
-                    return array('xabar'=>'auth_token table update');
+                    return array('xabar'=>'users table update');
                  } else {
                     return false;
                  }
@@ -38,8 +43,10 @@
         // delete
         public function delete($id){
             try{
-                $sql="DELETE FROM `auth_token` WHERE id=$id";  
-                if($this->db->query($sql)){
+                $sql="DELETE FROM `users` WHERE id=:id";  
+                $res=$this->db->prepare($sql);
+                 $res->bindParam(':id',$id,PDO::PARAM_INT);
+                if($res->execute()){
                     http_response_code(200);
                     return array('xabar'=>'delete users');
                 }else {
@@ -54,8 +61,10 @@
         // delete keys
         public function deleteKey($key,$id){
             try{
-                $sql="DELETE FROM `auth_token` WHERE $key=$id";  
-                if($this->db->query($sql)){
+                $sql="DELETE FROM `users` WHERE id=:id";  
+                $res=$this->db->prepare($sql);
+                 $res->bindParam(':id',$id,PDO::PARAM_INT);
+                if($res->execute()){
                     http_response_code(200);
                     return array('xabar'=>'delete users');
                 }else {
@@ -70,10 +79,12 @@
         // show id
         public function showId($id){
             try{
-                $sql="SELECT * FROM `auth_token` WHERE id=$id";  
-                if($this->db->query($sql)){
+                $sql="SELECT * FROM `users` WHERE id=:id";  
+                $res=$this->db->prepare($sql);
+               $res->bindParam(':id',$id,PDO::PARAM_INT);
+              if($res->execute()){
                     http_response_code(200);
-                    return [...$this->db->query($sql)];
+                    return [...$res];
                 }else {
                     return false;
                 }
@@ -86,10 +97,27 @@
         // filter key
         public function filter($key,$value){
             try{
-                $sql="SELECT * FROM `auth_token` WHERE $key='$value'";  
-                if($this->db->query($sql)){
+                $sql="SELECT * FROM `users` WHERE $key=:$key";  
+                $res=$this->db->prepare($sql);
+               $res->bindParam(":$key",$value);
+              if($res->execute()){
                     http_response_code(200);
-                    return [...$this->db->query($sql)];
+                    return [...$res];
+                }else {
+                    return false;
+                }
+            } catch (Exception $e) {
+                http_response_code(500);
+                return array('xabar'=>$e->getMessage());
+            }
+        }
+        public function filterLike($key,$value){
+            try{
+                $sql="SELECT * FROM `users` WHERE $key LIKE :$key";  
+                $res=$this->db->prepare($sql);
+              if($res->execute(array(":$key"=>"%$value%"))){
+                    http_response_code(200);
+                    return [...$res];
                 }else {
                     return false;
                 }
@@ -100,10 +128,11 @@
         }
         public function all(){
             try{
-                $sql="SELECT * FROM `auth_token`";  
-                if($this->db->query($sql)){
+                $sql="SELECT * FROM `users`";  
+                $res = $this->db->query($sql);
+                if($res){
                     http_response_code(200);
-                    return [...$this->db->query($sql)];
+                    return [...$res];
                 }else {
                     return false;
                 }
@@ -113,12 +142,10 @@
             }
             
         }
-        
-      
         // request 
         public function requestDate(){
             try{
-                $this->token=$this->request['token'] ?? "";
+                $this->username=$this->request['username'] ?? "";$this->password=$this->request['password'] ?? "";$this->email=$this->request['email'] ?? "";$this->img=$this->request['img'] ?? "";
             } catch (Exception $e) {
                 return array('xabar'=>$e->getMessage());
             }
@@ -135,7 +162,7 @@
                         $keyFilter =  $keyFilter."$value="."'".$data[$value]."'"."  $type  ";
                     }
                 }
-                $sql="SELECT * FROM `auth_token` WHERE  $keyFilter";  
+                $sql="SELECT * FROM `users` WHERE  $keyFilter";  
                 if($this->db->query($sql)){
                     http_response_code(200);
                     return [...$this->db->query($sql)];
@@ -198,7 +225,7 @@
                 $key__ = array_keys($required);
                 $response = [];
                 foreach ($key__ as $key => $value) {
-                    $res = [...$this->db->query("SELECT * FROM `auth_token` WHERE $value='$required[$value]'")];
+                    $res = [...$this->db->prepare("SELECT * FROM `users` WHERE $value=:$required[$value]")->execute()];
                     if (count($res) > 0) {
                         $response[$value] = "Required $value";
                     }
@@ -207,6 +234,18 @@
                  return $response;
                 } else {
                     return true;
+                }
+            } catch (Exception $e) {
+                http_response_code(500);
+                return array("xabar" => $e->getMessage()); 
+            }
+        }
+        public function deleteFile($url){
+            try {
+                if(unlink(__DIR__.$url)){
+                    return true;
+                }else {
+                    return false;
                 }
             } catch (Exception $e) {
                 http_response_code(500);

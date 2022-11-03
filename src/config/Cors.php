@@ -13,6 +13,7 @@ class Header {
     //  '/rest-api-back-end/v1/api/category/'
     '/rest-api-back-end/v1/api/blog/'
     ];
+    
     public  $results = true;
     public function auth($server_request,$user){
         $token = apache_request_headers()['token__'] ?? '';
