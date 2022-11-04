@@ -221,6 +221,7 @@ if ($header->auth($server_request, $auth) === true) {
                         }
                         break;
                         case '/rest-api-back-end/v1/api/usersf/': {
+                            $userPdo->request = $request;
                             $json->json(200, array( 'users' => $userPdo->where($request,'OR')));
                             if ($params['username'] ?? false) {
                             }

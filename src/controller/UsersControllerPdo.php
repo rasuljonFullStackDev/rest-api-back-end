@@ -162,10 +162,12 @@
                         $keyFilter =  $keyFilter."$value=".":".$data[$value].""."  $type  ";
                     }
                 }
-                $sql="SELECT * FROM `users` WHERE  $keyFilter";  
-                if($this->db->query($sql)){
+                $sql="SELECT * FROM `users` WHERE  username=:username";  
+                $res=$this->db->prepare($sql);
+                // var_dump($this->request);
+                if($res->execute(array(':username'=>$this->request['username']))){
                     http_response_code(200);
-                    return [...$this->db->query($sql)];
+                    return [...$res];
                 }else {
                     http_response_code(500);
                     return false;
